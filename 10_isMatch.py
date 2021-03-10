@@ -1,10 +1,16 @@
 class Solution(object):
     def isMatch(self, s, p):
+        d = {}
+        return self.dp(s, p, d)
+
+    def dp(self, s, p, d):
         """
         :type s: str
         :type p: str
         :rtype: bool
         """
+        if(s + "," + p in d):
+            return d[s + "," + p]
         # 根据情况匹配
         # 从前往后匹配
         size_s = len(s)
@@ -20,23 +26,20 @@ class Solution(object):
                     continue
                 else:
                     # 此时还有"*"
-                    # i += 1
-                    # continue
-                    return self.isMatch(s[i:], p[j + 2:]) or self.isMatch(s[i + 1:], p[j:])
+                    d[s + "," + p] = self.dp(
+                        s[i:], p[j + 2:], d) or self.dp(s[i + 1:], p[j:], d)
+                    return d[s + "," + p]
             elif(p[j] == "."):
                 # 是否还有"*"
                 if(j + 1 < size_p and p[j + 1] == "*"):
                     if(j + 1 == size_p - 1):
                         # 当"*"为最后一个
-                        return True
+                        d[s + "," + p] = True
+                        return d[s + "," + p]
                     else:
-                        return self.isMatch(s[i:], p[j + 2:]) or self.isMatch(s[i + 1:], p[j:])
-                        # while(size_s != i):
-                        #     if(s[i] != p[j + 2] and p[j + 2] != "."):
-                        #         i += 1
-                        #     else:
-                        #         return self.isMatch(s[i:], p[j + 2:]) or self.isMatch(s[i + 1:], p[j:])
-                        # continue
+                        d[s + "," + p] = self.dp(s[i:], p[j + 2:], d
+                                                 ) or self.dp(s[i + 1:], p[j:], d)
+                        return d[s + "," + p]
                     # 其他情况
                 else:
                     # 不含"*"
@@ -47,22 +50,25 @@ class Solution(object):
                 # 匹配不成功,只能使*重复0次
                 j += 2
                 continue
-            return False
+            d[s + "," + p] = False
+            return d[s + "," + p]
         # 此时s和p其中一个匹配完毕
         if(size_p == j and size_s == i):
-            return True
+            d[s + "," + p] = True
         elif(size_s != i):
-            return False
+            d[s + "," + p] = False
         else:
             if (size_p - j) % 2 != 0:
-                return False
+                d[s + "," + p] = False
+                return d[s + "," + p]
             # 从此开始一次确认*的存在
             while(size_p != j):
                 if p[j + 1] != "*":
-                    return False
+                    d[s + "," + p] = False
+                    return d[s + "," + p]
                 j += 2
-            return True
-        return False
+            d[s + "," + p] = True
+        return d[s + "," + p]
 
 
 if __name__ == "__main__":
