@@ -3,63 +3,42 @@ from typing import List
 
 class Solution:
     def __init__(self):
-        self.ret = set()
+        self.map = dict()
+        self.s = ""
+        self.maxSize = -1
 
     def removeInvalidParentheses(self, s: str) -> List[str]:
-        # 每次不满足时都必须在前面的序列中删除一个括号
-        # 要求删除的数量最少
-        # 最后的结果,从反方向再进行一次?
-        # 第一次时删除的括号数量相同,因此相反时,应该删除的括号数也会相同
-        size = len(s)
-        self.solve(0, size, s, 0, 0, 0)
-        temp = self.ret
-        self.ret = set()
-        for i in temp:
-            self.solve(len(i) - 1, -1, i, 0, 0, 0)
-        return list(self.ret)
+        # 使用栈+回溯法
+        self.s = s
+        self.solve("", 0, 0, 0)
+        return list(self.map[self.maxSize])
 
-    def solve(self, index, end, s, left, right, deled):
-        if(left + right == len(s)):
-            self.ret.add(s)
-            return
-        flag = index < end
-        step = 1 if index < end else -1
-        lefts = []
-        rights = []
-        for i in range(index, end, step):
-            if(s[i] == '('):
-                left += 1
-                lefts.append(i)
-            elif(s[i] == ')'):
-                right += 1
-                rights.append(i)
+    def solve(self, stack, left, right, index):
+        while(index < len(self.s)):
+            _right = right
+            _left = left
+            if(self.s[index] == "("):
+                _left += 1
+            elif(self.s[index] == ")"):
+                _right += 1
             else:
+                stack += self.s[index]
+                index += 1
                 continue
-            if(left == right):
-                continue
-            if((left < right and flag) or (left > right and not flag)):
-                toHandle = []
-                if(flag):
-                    # 正序
-                    toHandle = rights
-                else:
-                    toHandle = lefts
-                last = -10
-                for todel in toHandle:
-                    if(todel == last + step):
-                        continue
-                    _s = s[:todel] + s[todel + 1:]
-                    _i = len(_s) - left - \
-                        right if not flag else left + right - 1
-                    if(_i >= len(_s)):
-                        _i -= 1
-                    self.solve(_i, -1 if not flag else len(_s), _s,
-                               left if flag else left - 1, right if not flag else right - 1, deled + 1)
-
-                    last = todel
+            if(_left >= _right):
+                self.solve(stack + self.s[index], _left, _right, index + 1)
+                self.solve(stack, left, right, index + 1)
                 return
-        self.ret.add(s)
+            else:
+                index += 1
+        if(left == right):
+            size = len(stack)
+            self.maxSize = max(self.maxSize, size)
+            if(size not in self.map):
+                self.map[size] = set()
+            self.map[size].add(stack)
 
 
 solution = Solution()
-solution.removeInvalidParentheses("()())())())(((()()(")
+ret = solution.removeInvalidParentheses("(a)())()")
+print(len(ret))
