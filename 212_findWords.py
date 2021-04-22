@@ -1,68 +1,64 @@
 from typing import List
 
 
-class TreeNode:
-    def __init__(self, char='', key=-1):
-        self.char = char
-        self.key = key
-        self.next = dict()
-        self.isEnd = False
-
-
 class Solution:
     def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
-        # 由于word字符数量过大,应该使用前缀树?
-        # 为输入字符(要寻找的字符)构造前缀树
-        # 树构造完毕后在进行遍历
-        self.ret = []
-        self.finded = set()
-        self.m = len(board)
-        self.n = len(board[0])
-        self.board = board
-        self.table = [[] for i in range(26)]
-        for i in range(len(board)):
-            for j in range(len(board[0])):
-                self.table[ord(board[i][j]) - 97].append([i, j])
-        tree = TreeNode()
-        # 先构造树
+        WORD_KEY = '$'
+
+        trie = {}
         for word in words:
-            curr = tree
-            for i in range(len(word)):
-                key = ord(word[i]) - 97
-                if(key not in curr.next):
-                    curr.next[key] = TreeNode(word[i], key)
-                curr = curr.next[key]
-            curr.isEnd = True
-        # 深度优先?广度优先?
-        self.visit = set()
-        for node in tree.next.values():
-            for pos in self.table[node.key]:
-                string = self.getString(pos[0], pos[1])
-                visit = set()
-                visit.add(string)
-                self.solve(node.char, pos[0], pos[1], node, visit)
-        return self.ret
+            node = trie
+            for letter in word:
+                # retrieve the next node; If not found, create a empty node.
+                node = node.setdefault(letter, {})
+            # mark the existence of a word in trie node
+            node[WORD_KEY] = word
 
-    def solve(self, currWord, i, j, node, visit):
-        if node.isEnd:
-            if currWord not in self.visit:
-                self.visit.add(currWord)
-                self.ret.append(currWord)
-        arr = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]]
-        for item in arr:
-            if item[0] > -1 and item[0] < self.m and item[1] > -1 and item[1] < self.n:
-                key_str = self.board[item[0]][item[1]]
-                key = ord(key_str) - 97
-                if key in node.next:
-                    v = self.getString(item[0], item[1])
-                    if v not in visit:
-                        visit.add(v)
-                        self.solve(currWord + key_str,
-                                   item[0], item[1], node.next[key], visit)
-                        visit.remove(v)
+        rowNum = len(board)
+        colNum = len(board[0])
 
-    def getString(self, i, j):
-        return str(i) + "," + str(j)
+        matchedWords = []
+
+        def backtracking(row, col, parent):
+
+            letter = board[row][col]
+            currNode = parent[letter]
+
+            # check if we find a match of word
+            word_match = currNode.pop(WORD_KEY, False)
+            if word_match:
+                # also we removed the matched word to avoid duplicates,
+                #   as well as avoiding using set() for results.
+                matchedWords.append(word_match)
+
+            # Before the EXPLORATION, mark the cell as visited
+            board[row][col] = '#'
+
+            # Explore the neighbors in 4 directions, i.e. up, right, down, left
+            for (rowOffset, colOffset) in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
+                newRow, newCol = row + rowOffset, col + colOffset
+                if newRow < 0 or newRow >= rowNum or newCol < 0 or newCol >= colNum:
+                    continue
+                if not board[newRow][newCol] in currNode:
+                    continue
+                backtracking(newRow, newCol, currNode)
+
+            # End of EXPLORATION, we restore the cell
+            board[row][col] = letter
+
+            # Optimization: incrementally remove the matched leaf node in Trie.
+            # 对于一个叶子节点,当匹配成功时,其中的WORD_KEY将被删除,此时他没有其他叶子节点,满足删除的条件
+            # 则其父节点若不包含其他节点,也会被依次删除
+            if not currNode:
+                parent.pop(letter)
+
+        for row in range(rowNum):
+            for col in range(colNum):
+                # starting from each of the cells
+                if board[row][col] in trie:
+                    backtracking(row, col, trie)
+
+        return matchedWords
 
 
 if __name__ == "__main__":
