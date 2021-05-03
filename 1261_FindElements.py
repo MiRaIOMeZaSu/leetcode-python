@@ -16,36 +16,29 @@ class FindElements:
 
     def __init__(self, root: TreeNode):
         self.root = root
+        self.hashset = set()
         # 此处进行恢复
         root.val = 0
+        self.hashset.add(0)
         if root.left:
             self.solve(root.left, 1)
+            self.hashset.add(1)
         if root.right:
             self.solve(root.right, 2)
+            self.hashset.add(2)
 
     def find(self, target: int) -> bool:
         # 对类似二叉搜索树式的搜索方式
-        return self.search(self.root, target)
+        return target in self.hashset
 
     def solve(self, root: TreeNode, x: int):
         root.val = x
         if root.left:
             self.solve(root.left, 2 * x + 1)
+            self.hashset.add(root.left.val)
         if root.right:
             self.solve(root.right, 2 * x + 2)
-
-    def search(self, root: TreeNode, target: int):
-        if root.val < target:
-            if root.left:
-                if(self.search(root.left, target)):
-                    return True
-            if root.right:
-                if(self.search(root.right, target)):
-                    return True
-        elif root.val > target:
-            return False
-        else:
-            return True
+            self.hashset.add(root.right.val)
 
 # Your FindElements object will be instantiated and called as such:
 # obj = FindElements(root)
