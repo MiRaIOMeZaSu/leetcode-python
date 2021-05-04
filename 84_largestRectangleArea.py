@@ -30,6 +30,9 @@ class Solution:
         for i in range(0, size):
             ret = max(ret, heights[i] * (dp1[i] + dp2[i] - 1))
         return ret
+        # ! 可以优化的点: 1. 创建数组的方式[1] * size
+        # ! 2. 判断空的方式: if []
+        # ! 3. 最大值的判断方法:
 
 
 if __name__ == "__main__":
