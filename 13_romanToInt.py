@@ -10,41 +10,47 @@ class Solution:
     def romanToInt(self, s: str) -> int:
         # 读取识别的方向?
         # 从前往后
-        index = 0
+        size = len(s)
         ret = 0
-        while s and index < len(self.table):
-            if len(s) > 1:
-                i = self.m[s[1]]
-                if i + 1 < len(self.table) and s[0] == self.table[i + 1]:
+        index = 0
+        while s:
+            if size - index > 1:
+                i = self.m[s[index + 1]]
+                if i + 1 < len(self.table) and s[index] == self.table[i + 1]:
                     # 此时为4
                     ret += self.nums[i] - self.nums[i + 1]
-                    s = s[2:]
+                    index += 2
+                    # s = s[2:]
                     continue
-                elif i + 2 < len(self.table) and s[0] == self.table[i + 2]:
+                elif i + 2 < len(self.table) and s[index] == self.table[i + 2]:
                     # 此时为9
                     ret += self.nums[i] - self.nums[i + 2]
-                    s = s[2:]
+                    # s = s[2:]
+                    index += 2
                     continue
             # 直接往后读即可
             # 此时为1-3或6-8
-            if not s:
+            if index >= size:
                 break
-            if s[0] in self.five:
+            if s[index] in self.five:
                 # 6-8
-                tempIndex = self.m[s[0]]
+                tempIndex = self.m[s[index]]
                 ret += self.nums[tempIndex]
-                s = s[1:]
+                # s = s[1:]
+                index += 1
                 if s:
                     tempIndex += 1
-                    while s and s[0] == self.table[tempIndex]:
+                    while index < size and s[index] == self.table[tempIndex]:
                         ret += self.nums[tempIndex]
-                        s = s[1:]
+                        # s = s[1:]
+                        index += 1
             else:
                 # 1-3
-                tempIndex = self.m[s[0]]
-                while s and s[0] == self.table[tempIndex]:
+                tempIndex = self.m[s[index]]
+                while index < size and s[index] == self.table[tempIndex]:
                     ret += self.nums[tempIndex]
-                    s = s[1:]
+                    # s = s[1:]
+                    index += 1
         return ret
 
 
