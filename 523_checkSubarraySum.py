@@ -3,38 +3,41 @@ from typing import List
 
 class Solution:
     def checkSubarraySum(self, nums: List[int], k: int) -> bool:
-        # 二分法?
-        # 给出的数必然大于等于零(不存在窗口内更细分的结果?)
-        # 减去超越k的部分,转化为移动窗口问题
-        # 应该提前寻找连续的零
+        # 寻找两头
         size = len(nums)
         if size <= 1:
             return False
         self.k = k
-        for i in range(size):
-            nums[i] = nums[i] % k
-        # # 开始滑动窗口
-        # left = 0
-        # right = 1
-        table = {nums[0]: 1}
-        for i in range(1, size):
-            if (k - nums[i]) in table and table[(k - nums[i])] > 0:
+        last = 0
+        table = dict()
+        for i in range(size - 1, -1, -1):
+            num = last + nums[i]
+            if nums[i] == 0 and i != 0 and nums[i - 1] == 0:
                 return True
-            for key in list(table.keys()):
-                table[key] -= 1
-                if table[key] <= 0:
-                    table.pop(key)
-                newKey = (key + nums[i]) % k
-                if newKey == 0:
-                    return True
-                if newKey not in table:
-                    table[newKey] = 0
-                table[newKey] += 1
-            if nums[i] not in table:
-                table[nums[i]] = 0
-            table[nums[i]] += 1
+            key = num % k
+            if key == 0 and i < size - 1:
+                return True
+            if key not in table:
+                table[key] = i
+            last = num
+        pivot = last % k
+        # 开始计算前缀
+        last = 0
+        curr = last
+        for i in range(size):
+            curr = last + nums[i]
+            temp = curr % k
+            if temp == 0 and i > 0:
+                return True
+            key = pivot - curr % k
+            if key < 0:
+                key += k
+            # 此处会忽略连续的零的情况
+            if key in table and table[key] - i > 2:
+                return True
+            last = curr
         return False
 
 
 if __name__ == "__main__":
-    Solution().checkSubarraySum([23, 2, 6, 4, 7], 13)
+    Solution().checkSubarraySum([23, 6, 9], 6)
