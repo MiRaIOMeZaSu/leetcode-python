@@ -7,7 +7,7 @@ class Solution:
             while curr // div > 26:
                 div *= 26
         res = ""
-        while curr > 26:
+        while curr >= 26:
             index = int(curr // div)
             res += chr(ord('A') + index - 1)
             curr = int(curr % div)
@@ -17,4 +17,4 @@ class Solution:
 
 
 if __name__ == "__main__":
-    Solution().convertToTitle(701)
+    Solution().convertToTitle(27)
